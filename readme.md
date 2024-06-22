@@ -101,3 +101,7 @@ The project is structured as follows:
 - **utils**: Utility functions for directory creation, file reading, and exclusion logic.
 - **crawler**: Core logic for recursively reading directories and files.
 - **main**.go: Entry point of the application.
+
+### License
+
+This project is licensed under the MIT License.
