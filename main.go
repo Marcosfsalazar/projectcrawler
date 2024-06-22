@@ -24,8 +24,16 @@ func main(){
 	}
 
 	rootDir := os.Args[1]
-	dirsToExclude := []string{"node_modules", "dist", ".git"}
-	filesToExclude := []string{".env", "package-lock.json"}
+	
+	data,err := readIgnoreFile()
+
+	if err !=nil {
+		fmt.Println("error reading ignore file!", err)
+		return
+	}
+
+	dirsToExclude := data.Dirs
+	filesToExclude := data.Files
 
 	projectStructure, err := readDir(rootDir, dirsToExclude, filesToExclude)
 	if err != nil{
@@ -39,13 +47,13 @@ func main(){
 		return
 	}
 
-	dir := "content"
+	dir := "crawledContent"
 	if err := createDirIfNotExist(dir); err != nil{
 		fmt.Println(err)
 		return
 	}
 
-	err = ioutil.WriteFile("./content/project_structure.json", jsonData, 0644)
+	err = ioutil.WriteFile("./crawledContent/project_structure.json", jsonData, 0644)
 
 	if err != nil{
 		fmt.Println("Error writing JSON to file:", err)
@@ -110,4 +118,30 @@ func createDirIfNotExist(dir string) error {
 		}
 	}
 	return nil
+}
+
+type IgnoreData struct{
+	Dirs []string `json:"dirs"`
+	Files []string `json:"files"`
+}
+
+func readIgnoreFile() (IgnoreData,error){
+	var data IgnoreData
+
+	file, err := os.Open("./crawlerIgnore.json")
+
+	if err != nil {
+		if os.IsNotExist(err) {
+			return IgnoreData{Dirs: []string{}, Files: []string{}}, nil
+		}
+	}
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+
+	if err := decoder.Decode(&data); err != nil{
+		return data, err
+	}
+
+	return data, err
 }
