@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 )
 
@@ -14,7 +17,43 @@ type 	Directory struct {
 	Files map[string]FileContent `json:"files,omitempty"`
 }
 
-func main(){}
+func main(){
+	if len(os.Args) < 2{
+		fmt.Println("Usage: projectCrawler <root-directory>")
+		return
+	}
+
+	rootDir := os.Args[1]
+	dirsToExclude := []string{"node_modules", "dist", ".git"}
+	filesToExclude := []string{".env", "package-lock.json"}
+
+	projectStructure, err := readDir(rootDir, dirsToExclude, filesToExclude)
+	if err != nil{
+		fmt.Println("Error reading directory: ", err)
+		return
+	}
+
+	jsonData, err := json.MarshalIndent(projectStructure, "", " ")
+	if err != nil{
+		fmt.Println("Error marshaling JSON:", err)
+		return
+	}
+
+	dir := "content"
+	if err := createDirIfNotExist(dir); err != nil{
+		fmt.Println(err)
+		return
+	}
+
+	err = ioutil.WriteFile("./content/project_structure.json", jsonData, 0644)
+
+	if err != nil{
+		fmt.Println("Error writing JSON to file:", err)
+		return
+	}
+
+	fmt.Println("Success!")
+}
 
 func readDir(root string, dirsToExclude, filesToExclude []string) (Directory, error){
 	var result Directory
@@ -62,4 +101,13 @@ func contains(slice []string, item string) bool {
 		}
 	}
 	return false
+}
+
+func createDirIfNotExist(dir string) error {
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		if err := os.Mkdir(dir, os.ModePerm); err != nil {
+			return fmt.Errorf("error while creating %s directory: %v", dir, err)
+		}
+	}
+	return nil
 }
