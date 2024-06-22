@@ -14,7 +14,7 @@ Project Crawler is a Go-based utility designed to recursively scan directories, 
 
 ### 1. Clone the Repository
 ```sh
-git clone https://github.com/marcosfsalazar/project-crawler.git
+git clone https://github.com/Marcosfsalazar/projectcrawler
 cd project-crawler
 ```
 
